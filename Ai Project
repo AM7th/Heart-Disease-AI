@@ -1,0 +1,622 @@
+import speech_recognition as sr
+import pyttsx3
+import time
+engine = pyttsx3.init() 
+
+""" RATE"""
+
+engine.setProperty('rate', 150)
+rate = engine.getProperty('rate')
+engine.runAndWait()
+engine.stop()
+
+
+"""VOLUME"""
+volume = engine.getProperty('volume')   
+engine.setProperty('volume',1)   
+
+"""VOICE"""
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id) 
+
+
+global risk
+risk = 0
+global cholRisk
+cholRisk = 0
+
+class Patient:
+    def __init__(self, age, gender, skinColor, angina, smokeHistory, bmi, famHistory, jobStress, bmiCategory):
+        self.age = age
+        self.gender = gender
+        self.famHistory = famHistory
+        self.smokeHistory = smokeHistory
+        self.skinColor = skinColor
+        self.angina = angina
+        #self.cholGrowth = cholGrowth
+        self.jobStress = jobStress
+        self.bmi = bmi
+        self.bmiCategory = bmiCategory
+         
+
+    
+def skinColor():
+    global pSkinColor
+    global risk
+    while pSkinColor != 'blue' or pSkinColor != 'normal' or pSkinColor != 'purple' or pSkinColor != 'gray':              
+        if pSkinColor == 'blue':
+            pSkinColor = 'blue'
+            engine.say("Have you hypothermia or frostbite recently? Please answer with yes or no.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                global pHypoFrost
+                pHypoFrost = r.recognize_google(audio, key = None)
+                while pHypoFrost != 'yes' or pHypoFrost != 'no':
+                    if pHypoFrost == 'yes':
+                        pHypoFrost = 'yes'
+                        return 0
+                    elif pHypoFrost == 'no':
+                        pHypoFrost = 'no'
+                        global risk
+                        risk +=1
+                        return 0
+                    else:
+                        engine.say("Please answer with the values given. Have you experienced hypothermia or frostbite recently? Please answer with yes or no.")
+                        engine.runAndWait()
+                        engine.stop()
+                        r = sr.Recognizer()
+                        r.energy_threshold = 50
+                        r.dynamic_energy_threshold = False
+                        with sr.Microphone() as source:
+                            engine.say("I am recording now...")
+                            engine.runAndWait()
+                            engine.stop()
+                            audio = r.listen(source, phrase_time_limit = 5)
+                            engine.say("You said: " + str(r.recognize_google(audio)))
+                            engine.runAndWait()
+                            engine.stop()
+                            pHypoFrost = r.recognize_google(audio, key = None)
+            
+        elif pSkinColor == 'normal':
+            pSkinColor = 'normal'
+            return 0
+        elif pSkinColor == 'purple':
+            pSkinColor = 'purple'
+            risk += 1
+            return 0
+        elif pSkinColor == 'gray':
+            pSkinColor = 'grey'
+            risk += 1
+            return 0  
+        else:
+            engine.say("Please answer with the choices given. What color does your skin look like? Say blue, purple, grey, or normal.")
+            engine.runAndWait()
+            engine.stop()
+
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pSkinColor = r.recognize_google(audio, key = None)
+                print(pSkinColor)
+                skinColor()
+           
+    
+    
+def Angina():
+    global pAngina
+    while pAngina != 'no' or pAngina != 'yes':
+        if pAngina == 'yes':
+            pAngina = 'yes'
+            global risk
+            risk += 1
+            return 0
+        elif pAngina == 'no':
+            pAngina = 'no'
+            return 0
+        else:
+            engine.say("Have you experienced a crushing pain behind the chest? Say yes or no.")
+            engine.runAndWait()
+            engine.stop()
+            
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pAngina = r.recognize_google(audio, key = None)
+                Angina()
+
+
+def Smoke():
+    global pSmokeHist
+    while pSmokeHist != 'yes' or pSmokeHist != 'no':
+        if pSmokeHist == 'yes':
+            pSmokeHist = 'yes'
+            global cholRisk
+            cholRisk+=1
+            return 0
+        elif pSmokeHist == 'no':
+            pSmokeHist = 'no'
+            return 0
+        else:
+            engine.say("Please answer with the values given. Have you smoked in the past? Please answer with yes or no.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pSmokeHist = r.recognize_google(audio, key = None)
+                Smoke()
+
+def Family():
+    global pFamHist
+    while pFamHist != 'yes' or pFamHist != 'no':
+        if pFamHist == 'yes':
+            pFamHist = 'yes'
+            global cholRisk
+            cholRisk+=1
+            return 0
+        elif pFamHist == 'no':
+            pFamHist = 'no'
+            return 0
+        else:
+            engine.say("Please answer with the values given. Have any of your family members been diagnosed with heart disease? Please answer with yes or no.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pFamHist = r.recognize_google(audio, key = None)
+                Family()
+
+def Stress():
+    global pStress
+    while pStress != 'yes' or pStress != 'no':
+        if pStress == 'yes':
+            pStress = 'yes'
+            global cholRisk
+            cholRisk+=1
+            return 0
+        elif pStress == 'no':
+            pStress = 'no'
+            return 0
+        else:
+            engine.say("Please answer with the values given. Do you experience high stress levels because of your job? Please answer with yes or no.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pStress = r.recognize_google(audio, key = None)
+                Stress()
+
+def ClassifyBmi():
+    global pAge
+    global pGender
+    #prevents pAge variable from being an integer, doesn't allow program to skip question
+    pAge = 'a'
+    while type(pAge) != int:
+            engine.say("What is your age? Please answer with an integer.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pAge = int(r.recognize_google(audio, key = None))
+    pWeight = 'b'
+    while type(pWeight) != int:
+            engine.say("What is your weight? Please round to the nearest pound.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pWeight = int(r.recognize_google(audio, key = None))
+    pHeight = 'c'
+    while type(pHeight) != int:
+        engine.say("What is your height? Please answer in inches. 12 inches is equal to 1 foot. I will give you more time to calculate your height into inches.")
+        engine.runAndWait()
+        engine.stop()
+        r = sr.Recognizer()
+        r.energy_threshold = 50
+        r.dynamic_energy_threshold = False
+        with sr.Microphone() as source:
+            engine.say("I am recording now...")
+            engine.runAndWait()
+            engine.stop()
+            audio = r.listen(source, phrase_time_limit = 15)
+            engine.say("You said: " + str(r.recognize_google(audio)))
+            engine.runAndWait()
+            engine.stop()
+            pHeight = int(r.recognize_google(audio, key = None))
+    global pBMI
+    pBMI = (int(pWeight)*703)/int(pHeight)**2
+    
+    #Categorizes BMI
+    if pBMI < 18.5:
+        global pBMICategory
+        pBMICategory = 'underweight'
+    if pBMI >= 18.5 and pBMI <=24.9:
+        pBMICategory = 'healthy'
+    if pBMI >= 25 and pBMI <= 29.9:
+        global cholRisk
+        cholRisk +=1
+        pBMICategory = 'overweight'
+    if pBMI >= 30:
+        cholRisk +=1
+        pBMICategory = 'obese'
+        
+    #Asks for gender
+    pGender = 'not set yet'
+    engine.say("What is your gender? Say male or female.")
+    engine.runAndWait()
+    engine.stop()
+    r = sr.Recognizer()
+    r.energy_threshold = 50
+    r.dynamic_energy_threshold = False
+    with sr.Microphone() as source:
+        engine.say("I am recording now...")
+        engine.runAndWait()
+        engine.stop()
+        audio = r.listen(source, phrase_time_limit = 5)
+        engine.say("You said: " + str(r.recognize_google(audio)))
+        engine.runAndWait()
+        engine.stop()
+        pGender = r.recognize_google(audio, key = None)
+    while pGender != 'male' or pGender != 'mail' or pGender != 'female':
+        if pGender == 'male' or pGender == 'mail':
+            pGender = 'Male'
+            engine.say("This is the end of the questions for calculating your BMI.")
+            engine.runAndWait()
+            engine.stop()
+            return 0
+        elif pGender == 'female':
+            pGender = 'Female'
+            engine.say("This is the end of the questions for calculating your BMI.")
+            engine.runAndWait()
+            engine.stop()
+            return 0
+        else:
+            engine.say("Please answer with the values given. What is your gender? Say male or female.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pGender = r.recognize_google(audio, key = None)
+
+def Diabetes():
+    global pDiabetes
+    while pDiabetes != 'yes' or pDiabetes != 'no':
+        if pDiabetes == 'yes':
+            pDiabetes = 'yes'
+            global cholRisk
+            cholRisk+=1
+            return 0
+        elif pDiabetes == 'no':
+            pDiabetes = 'no'
+            return 0
+        else:
+            engine.say("Please answer with the values given. Are you diagnosed with Type 1 or Type 2 diabetes? Please answer with yes or no.")
+            engine.runAndWait()
+            engine.stop()
+            r = sr.Recognizer()
+            r.energy_threshold = 50
+            r.dynamic_energy_threshold = False
+            with sr.Microphone() as source:
+                engine.say("I am recording now...")
+                engine.runAndWait()
+                engine.stop()
+                audio = r.listen(source, phrase_time_limit = 5)
+                engine.say("You said: " + str(r.recognize_google(audio)))
+                engine.runAndWait()
+                engine.stop()
+                pDiabetes = r.recognize_google(audio, key = None)
+                Diabetes()
+
+#actually starts code
+#Skin Color question
+engine.say("What color does your skin look like? Say blue, purple, grey, or normal.")
+engine.runAndWait()
+engine.stop()
+r = sr.Recognizer()
+r.energy_threshold = 50
+r.dynamic_energy_threshold = False
+with sr.Microphone() as source:
+    engine.say("I am recording now...")
+    engine.runAndWait()
+    engine.stop()
+    audio = r.listen(source, phrase_time_limit = 5)
+    engine.say("You said: " + str(r.recognize_google(audio)))
+    engine.runAndWait()
+    engine.stop()
+
+global pSkinColor
+pSkinColor = r.recognize_google(audio, key = None)
+skinColor()
+engine.say("These next questions will ask for information needed to calculate your BMI. For accuracy, please do not include the units, such as years, pounds, or inches.")
+engine.runAndWait()
+engine.stop()
+
+#BMI questions
+ClassifyBmi()
+
+#Angina question
+engine.say("Have you experienced a crushing pain behind the chest? Say yes or no.")
+engine.runAndWait()
+engine.stop()
+r = sr.Recognizer()
+r.energy_threshold = 50
+r.dynamic_energy_threshold = False
+with sr.Microphone() as source:
+    engine.say("I am recording now...")
+    engine.runAndWait()
+    engine.stop()
+    audio = r.listen(source, phrase_time_limit = 5)
+    engine.say("You said: " + str(r.recognize_google(audio)))
+    engine.runAndWait()
+    engine.stop()
+
+global pAngina
+pAngina = r.recognize_google(audio, key = None)
+Angina()
+
+#Smoke question
+engine.say("Have you smoked in the past? Please answer with yes or no.")
+engine.runAndWait()
+engine.stop()
+r = sr.Recognizer()
+r.energy_threshold = 50
+r.dynamic_energy_threshold = False
+with sr.Microphone() as source:
+    engine.say("I am recording now...")
+    engine.runAndWait()
+    engine.stop()
+    audio = r.listen(source, phrase_time_limit = 5)
+    engine.say("You said: " + str(r.recognize_google(audio)))
+    engine.runAndWait()
+    engine.stop()
+
+global pSmokeHist
+pSmokeHist = r.recognize_google(audio, key = None)
+Smoke()
+
+#Family History question
+engine.say("Have any of your family members been diagnosed with heart disease? Please answer with yes or no.")
+engine.runAndWait()
+engine.stop()
+r = sr.Recognizer()
+r.energy_threshold = 50
+r.dynamic_energy_threshold = False
+with sr.Microphone() as source:
+    engine.say("I am recording now...")
+    engine.runAndWait()
+    engine.stop()
+    audio = r.listen(source, phrase_time_limit = 5)
+    engine.say("You said: " + str(r.recognize_google(audio)))
+    engine.runAndWait()
+    engine.stop()
+
+global pFamHist
+pFamHist = r.recognize_google(audio, key = None)
+Family()
+
+#Job Stress question
+engine.say("Do you experience high stress levels because of your job? Please answer with yes or no.")
+engine.runAndWait()
+engine.stop()
+r = sr.Recognizer()
+r.energy_threshold = 50
+r.dynamic_energy_threshold = False
+with sr.Microphone() as source:
+    engine.say("I am recording now...")
+    engine.runAndWait()
+    engine.stop()
+    audio = r.listen(source, phrase_time_limit = 5)
+    engine.say("You said: " + str(r.recognize_google(audio)))
+    engine.runAndWait()
+    engine.stop()
+
+global pStress
+pStress = r.recognize_google(audio, key = None)
+Stress()
+
+#Diabetes question
+engine.say("Are you diagnosed with Type 1 or Type 2 diabetes? Please answer with yes or no.")
+engine.runAndWait()
+engine.stop()
+r = sr.Recognizer()
+r.energy_threshold = 50
+r.dynamic_energy_threshold = False
+with sr.Microphone() as source:
+    engine.say("I am recording now...")
+    engine.runAndWait()
+    engine.stop()
+    audio = r.listen(source, phrase_time_limit = 5)
+    engine.say("You said: " + str(r.recognize_google(audio)))
+    engine.runAndWait()
+    engine.stop()
+
+global pDiabetes
+pDiabetes = r.recognize_google(audio, key = None)
+Diabetes()
+
+if cholRisk >=3:
+    risk+=1
+    pChol = 'yes'
+elif cholRisk < 3:
+    pChol = 'no'
+
+
+
+global pBMICategory
+global pAge
+global pGender
+global pBMI
+# Patient class arguments are supported by self variables in initialize function
+p1 = Patient(pAge, pGender, pSkinColor, pAngina, pSmokeHist, pBMI, pFamHist, pStress, pBMICategory)
+engine.say("Your risk of heart disease is " + str(risk) + " out of 3.")
+engine.runAndWait()
+engine.stop()
+if risk == 0:
+    engine.say("If you have a risk of 0, that indicates you do not have a risk of heart disease.")
+    engine.runAndWait()
+    engine.stop()
+if risk == 1:
+    engine.say("If you have a risk of 1, that indicates you have a low risk of heart disease.")
+    engine.runAndWait()
+    engine.stop()
+if risk == 2:
+    engine.say("If you have a risk of 2, that indicates you have a moderate risk of heart disease.")
+    engine.runAndWait()
+    engine.stop()
+if risk == 3:
+    engine.say("If you have a risk of 3, that indicates you have a high risk of heart disease and should see a doctor ASAP.")
+    engine.runAndWait()
+    engine.stop()
+engine.say("WARNING: ALL RESULTS GIVEN ARE TEMPORARY. RESULTS MAY CHANGE IF CURRENT HABITS ALTER. DO NOT TREAT THESE RESULTS AS A PERMANENT DESCRIPTION.")
+engine.runAndWait()
+engine.stop()
+time.sleep(3)
+#view results?
+viewResults = ''
+while viewResults != 'yes' or viewResults != 'no':
+    engine.say("Would you like to view a report of your responses? Please answer with yes or no.")
+    engine.runAndWait()
+    engine.stop()
+    r = sr.Recognizer()
+    r.energy_threshold = 50
+    r.dynamic_energy_threshold = False
+    with sr.Microphone() as source:
+        engine.say("I am recording now...")
+        engine.runAndWait()
+        engine.stop()
+        audio = r.listen(source, phrase_time_limit = 5)
+        engine.say("You said: " + str(r.recognize_google(audio)))
+        engine.runAndWait()
+        engine.stop()
+        viewResults = str(r.recognize_google(audio))
+    if viewResults == 'yes':
+            engine.say("Your results will show up on the screen shortly.")
+            engine.runAndWait()
+            engine.stop()
+            time.sleep(3)
+            print("Skin Color: " + pSkinColor)
+            print("Age: " + str(pAge))
+            print("Body Mass Index (BMI): " + str(pBMI))
+            print("Category of BMI:" + pBMICategory)
+            print("Gender: " + pGender)
+            print("Angina: " + pAngina)
+            print("Smoking History: " + pSmokeHist)
+            print("Family history of heart disease: " + pFamHist)
+            print("Job Stress: " + pStress)
+            print("Chance of cholesterol growth: " + pChol)
+            engine.say("Thank you for taking the test! I hope this provided some helpful information for you!")
+            engine.runAndWait()
+            engine.stop()
+            
+    if viewResults == 'no':
+        engine.say("Okay, thank you for taking the test! I hope this provided some helpful information for you!")
+        engine.runAndWait()
+        engine.stop()
+        
+datasetConsent = ''
+while datasetConsent != 'yes' or datasetConsent != 'no':
+    engine.say("I have one final question for you. Do you give your consent to sharing your information to build a dataset? This will improve my performance and quality.")
+    engine.runAndWait()
+    engine.stop()
+    r = sr.Recognizer()
+    r.energy_threshold = 50
+    r.dynamic_energy_threshold = False
+    with sr.Microphone() as source:
+        engine.say("I am recording now...")
+        engine.runAndWait()
+        engine.stop()
+        audio = r.listen(source, phrase_time_limit = 5)
+        engine.say("You said: " + str(r.recognize_google(audio)))
+        engine.runAndWait()
+        engine.stop()
+        datasetConsent = str(r.recognize_google(audio))
+    
+    if datasetConsent == 'yes':
+        engine.say("Thank you for giving consent and taking out some time to take this test! Once again, I hope you get some helpful information!")
+        engine.runAndWait()
+        engine.stop()
+            
+    if datasetConsent == 'no':
+        engine.say("No problem! Thank you for taking out some time to take this test! Once again, I hope you get some helpful information!")
+        engine.runAndWait()
+        engine.stop()
